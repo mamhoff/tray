@@ -28,7 +28,7 @@ public abstract class WinspoolUtil2 {
         IntByReference pcReturned = new IntByReference();
         HANDLEByReference pHandle = new HANDLEByReference();
 
-        // First pass: Get page size
+        // Get printer handle
         if (!Winspool.INSTANCE.OpenPrinter(printerName, pHandle, null)) {
             throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
         }
@@ -37,12 +37,13 @@ public abstract class WinspoolUtil2 {
         PRINTER_INFO_9 pinfo9 = null;
 
         try {
-            // Second pass: Get printer information
+            // First pass: Get page size
             Winspool.INSTANCE.GetPrinter(pHandle.getValue(), 9, null, 0, pcbNeeded);
             if (pcbNeeded.getValue() <= 0) {
                 return new PRINTER_INFO_9();
             }
 
+            // Second pass: Get printer information
             pinfo9 = new PRINTER_INFO_9(pcbNeeded.getValue());
             if (!Winspool.INSTANCE.GetPrinter(pHandle.getValue(), 9, pinfo9.getPointer(), pcbNeeded.getValue(), pcReturned)) {
                 throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
