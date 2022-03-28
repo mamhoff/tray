@@ -9,6 +9,9 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Dummy class to expose addSuppressedReflected to a custom class
+ */
 public class Win32Exception extends LastErrorException {
     private static final long serialVersionUID = 1L;
     private HRESULT _hr;

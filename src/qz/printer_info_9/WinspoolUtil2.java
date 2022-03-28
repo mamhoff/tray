@@ -219,35 +219,30 @@ public abstract class WinspoolUtil2 {
         return pinfo9;
     }
 
-    public static JOB_INFO_1[] getJobInfo1(HANDLEByReference phPrinter) {
+
+    public static PRINTER_INFO_9[] getPrinterInfo9x(HANDLEByReference phPrinter) {
         IntByReference pcbNeeded = new IntByReference();
         IntByReference pcReturned = new IntByReference();
-        Winspool.INSTANCE.EnumJobs(phPrinter.getValue(), 0, 255, 1, null, 0,
-                                   pcbNeeded, pcReturned);
+
+        // First pass: Get page size
+        System.out.println("here1");  // FIXME: Remove
+        Winspool.INSTANCE.GetPrinter(phPrinter.getValue(),9, null, 0, pcbNeeded);
         if (pcbNeeded.getValue() <= 0) {
-            return new JOB_INFO_1[0];
+            return new PRINTER_INFO_9[0];
         }
 
-        int lastError = ERROR_SUCCESS;
-        JOB_INFO_1 pJobEnum;
-        do {
-            pJobEnum = new JOB_INFO_1(pcbNeeded.getValue());
-            if (!Winspool.INSTANCE.EnumJobs(phPrinter.getValue(), 0, 255, 1,
-                                            pJobEnum.getPointer(), pcbNeeded.getValue(), pcbNeeded,
+        // Second pass: Get printer information
+        System.out.println("here2");  // FIXME: Remove
+        System.out.println("pcbNeeded: " + pcbNeeded.getValue()); // FIXME: Remove
+        PRINTER_INFO_9 pPrinterEnum = new PRINTER_INFO_9(pcbNeeded.getValue());
+        if (!Winspool.INSTANCE.GetPrinter(phPrinter.getValue(), 9,
+                                            pPrinterEnum.getPointer(), pcbNeeded.getValue(),
                                             pcReturned)) {
-                lastError = Kernel32.INSTANCE.GetLastError();
-            }
-        } while (lastError == ERROR_INSUFFICIENT_BUFFER);
-        if (lastError != ERROR_SUCCESS) {
-            throw new Win32Exception(lastError);
-        }
-        if (pcReturned.getValue() <= 0) {
-            return new JOB_INFO_1[0];
+            throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
         }
 
-        pJobEnum.read();
+        pPrinterEnum.read();
 
-        return (JOB_INFO_1[]) pJobEnum.toArray(pcReturned.getValue());
+        return (PRINTER_INFO_9[]) pPrinterEnum.toArray(pcReturned.getValue());
     }
-
 }
