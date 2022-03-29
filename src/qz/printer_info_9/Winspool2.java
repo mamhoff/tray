@@ -31,6 +31,49 @@ public interface Winspool2 extends StdCallLibrary {
     }
 
     /**
+     * The PRINTER_INFO_8 structure specifies the global default printer settings.
+     */
+    @FieldOrder({"pDevMode"})
+    public static class PRINTER_INFO_8 extends Structure {
+        public DEVMODE pDevMode;
+
+        public PRINTER_INFO_8() {}
+
+        public PRINTER_INFO_8(int size) {
+            super(new Memory((long)size));
+        }
+    }
+
+    /**
+     * The PRINTER_INFO_7 structure specifies directory services printer information.
+     */
+    @FieldOrder({"pszObjectGUID", "dwAction"})
+    public static class PRINTER_INFO_7 extends Structure {
+        public String pszObjectGUID;
+        public DWORD dwAction;
+
+        public PRINTER_INFO_7() {}
+
+        public PRINTER_INFO_7(int size) {
+            super(new Memory((long)size));
+        }
+    }
+
+    /**
+     * The PRINTER_INFO_6 structure specifies the status value of a printer.
+     */
+    @FieldOrder({"dwStatus"})
+    public static class PRINTER_INFO_6 extends Structure {
+        public DWORD dwStatus;
+
+        public PRINTER_INFO_6() {}
+
+        public PRINTER_INFO_6(int size) {
+            super(new Memory((long)size));
+        }
+    }
+
+    /**
      * The PRINTER_INFO_5 structure specifies detailed printer information.
      */
     @FieldOrder({"pPrinterName", "pPortName", "Attributes", "DeviceNotSelectedTimeout", "TransmissionRetryTimeout" })

@@ -2,6 +2,8 @@ package qz.printer_info_9;
 
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.Winspool;
 
 import java.lang.reflect.Field;
 
@@ -11,7 +13,7 @@ public class Main {
     public static void main(String ... args) throws Throwable {
 
         /** Get all printers **
-        for(int i : new int[] { 1, 2, 3, 4, 5, 9}) {
+        for(int i : new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9}) {
             System.out.println("PRINTER_INFO_" + i);
             Structure[] all = WinspoolUtil2.getPrinterInfoByStruct(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, i);
             System.out.println("-----------");
@@ -23,7 +25,7 @@ public class Main {
 
         /** Get specified printer **/
         String name = "Microsoft XPS Document Writer";
-        for(int i : new int[] { 1, 2, 3, 4, 5, 9}) {
+        for(int i : new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9}) {
             System.out.println("[PRINTER_INFO_" + i + "]");
             Structure info = WinspoolUtil2.getPrinterInfoByStruct(name, i);
             System.out.println(spaces(2) + name + ":");
@@ -45,9 +47,29 @@ public class Main {
 
         // Iterate all fields
         for(Field f : info.getClass().getFields()) {
+            // Skip internal-use fields
+            if(f.getName().startsWith("ALIGN_")) {
+                continue;
+            }
+
             System.out.print(spaces(indent + 4) + f.getName() + ": ");
             Object o = f.get(info);
-            if (o instanceof byte[]) {
+            if(f.getName().equals("Status") || f.getName().equals("dwStatus")) {
+                int dwStatus = o instanceof WinDef.DWORD ? ((WinDef.DWORD)o).intValue() : (Integer)o;
+                System.out.println(o);
+                if(dwStatus == 0) {
+                    System.out.println(spaces(indent + 6) + "PRINTER_STATUS_NORMAL");
+                    continue;
+                }
+                for(Field w : Winspool.class.getDeclaredFields()) {
+                    if(w.getName().startsWith("PRINTER_STATUS_")) {
+                        int flag = (Integer)(w.get(null));
+                        if((flag & dwStatus) == flag) {
+                            System.out.println(spaces(indent + 6) + w.getName());
+                        }
+                    }
+                }
+            } else if (o instanceof byte[]) {
                 // TODO:  Determine why PRINTER_INFO_9's dmDeviceName is corrupted
                 System.out.println(Native.toString((byte[])o));
             } else if (o instanceof Structure) {

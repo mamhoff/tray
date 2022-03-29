@@ -13,6 +13,7 @@ import static qz.printer_info_9.Winspool2.*;
  * Winspool Utility API.
  *
  * @author dblock[at]dblock.org, Ivan Ridao Freitas, Padrus, Artem Vozhdayenko
+ * @author tres.finocchiaro@gmail.com, Tres Finocchiaro
  */
 public abstract class WinspoolUtil2 {
     /**
@@ -104,10 +105,16 @@ public abstract class WinspoolUtil2 {
                 return new PRINTER_INFO_4[0];
             case 5:
                 return new PRINTER_INFO_5[0];
+            case 6:
+                return new PRINTER_INFO_6[0];
+            case 7:
+                return new PRINTER_INFO_7[0];
+            case 8:
+                return new PRINTER_INFO_8[0];
             case 9:
                 return new PRINTER_INFO_9[0];
             default:
-                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " has not been implemented");
+                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " doesn't exist or has not been implemented");
         }
     }
 
@@ -123,10 +130,16 @@ public abstract class WinspoolUtil2 {
                 return size <= 0 ? new PRINTER_INFO_4() : new PRINTER_INFO_4(size);
             case 5:
                 return size <= 0 ? new PRINTER_INFO_5() : new PRINTER_INFO_5(size);
+            case 6:
+                return size <= 0 ? new PRINTER_INFO_6() : new PRINTER_INFO_6(size);
+            case 7:
+                return size <= 0 ? new PRINTER_INFO_7() : new PRINTER_INFO_7(size);
+            case 8:
+                return size <= 0 ? new PRINTER_INFO_8() : new PRINTER_INFO_8(size);
             case 9:
                 return size <= 0 ? new PRINTER_INFO_9() : new PRINTER_INFO_9(size);
             default:
-                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " has not been implemented");
+                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " doesn't exist or has not been implemented");
         }
     }
 
@@ -138,12 +151,20 @@ public abstract class WinspoolUtil2 {
         return getPrinterInfo2(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
     }
 
+    public static PRINTER_INFO_3[] getAllPrinterInfo3() {
+        return getPrinterInfo3(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
     public static PRINTER_INFO_4[] getAllPrinterInfo4() {
         return getPrinterInfo4(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
     }
 
     public static PRINTER_INFO_5[] getAllPrinterInfo5() {
         return getPrinterInfo5(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_7[] getAllPrinterInfo7() {
+        return getPrinterInfo7(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
     }
 
     public static PRINTER_INFO_9[] getAllPrinterInfo9() {
@@ -193,6 +214,27 @@ public abstract class WinspoolUtil2 {
     }
 
     /**
+     * The PRINTER_INFO_3 structure specifies printer security information.
+     */
+    public static PRINTER_INFO_3 getPrinterInfo3(String printerName) {
+        return (PRINTER_INFO_3)getPrinterInfoByStruct(printerName, 3);
+    }
+
+    /**
+     * The PRINTER_INFO_3 structure specifies printer security information.
+     */
+    public static PRINTER_INFO_3[] getPrinterInfo3(int flags) {
+        return (PRINTER_INFO_3[])getPrinterInfoByStruct(flags, 3);
+    }
+
+    /**
+     * The PRINTER_INFO_3 structure specifies printer security information.
+     */
+    public static PRINTER_INFO_3[] getPrinterInfo3() {
+        return getPrinterInfo3(Winspool.PRINTER_ENUM_LOCAL);
+    }
+
+    /**
      * The PRINTER_INFO_4 structure specifies general printer information.
      */
     public static PRINTER_INFO_4 getPrinterInfo4(String printerName) {
@@ -232,6 +274,69 @@ public abstract class WinspoolUtil2 {
      */
     public static PRINTER_INFO_5[] getPrinterInfo5() {
         return getPrinterInfo5(PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_6 specifies the status value of a printer.
+     */
+    public static PRINTER_INFO_6 getPrinterInfo6(String printerName) {
+        return (PRINTER_INFO_6)getPrinterInfoByStruct(printerName, 6);
+    }
+
+    /**
+     * The PRINTER_INFO_6 specifies the status value of a printer.
+     */
+    public static PRINTER_INFO_6[] getPrinterInfo6(int flags) {
+        return (PRINTER_INFO_6[])getPrinterInfoByStruct(flags, 6);
+    }
+
+    /**
+     * The PRINTER_INFO_6 specifies the status value of a printer.
+     */
+    public static PRINTER_INFO_6[] getPrinterInfo6() {
+        return getPrinterInfo6(PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_7 structure specifies directory services printer information.
+     */
+    public static PRINTER_INFO_7 getPrinterInfo7(String printerName) {
+        return (PRINTER_INFO_7)getPrinterInfoByStruct(printerName, 7);
+    }
+
+    /**
+     * The PRINTER_INFO_7 structure specifies directory services printer information.
+     */
+    public static PRINTER_INFO_7[] getPrinterInfo7(int flags) {
+        return (PRINTER_INFO_7[])getPrinterInfoByStruct(flags, 7);
+    }
+
+    /**
+     * The PRINTER_INFO_7 structure specifies directory services printer information.
+     */
+    public static PRINTER_INFO_7[] getPrinterInfo7() {
+        return getPrinterInfo7(PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_8 structure specifies the global default printer settings.
+     */
+    public static PRINTER_INFO_8 getPrinterInfo8(String printerName) {
+        return (PRINTER_INFO_8)getPrinterInfoByStruct(printerName, 8);
+    }
+
+    /**
+     * The PRINTER_INFO_8 structure specifies the global default printer settings.
+     */
+    public static PRINTER_INFO_8[] getPrinterInfo8(int flags) {
+        return (PRINTER_INFO_8[])getPrinterInfoByStruct(flags, 8);
+    }
+
+    /**
+     * The PRINTER_INFO_8 structure specifies the global default printer settings.
+     */
+    public static PRINTER_INFO_8[] getPrinterInfo8() {
+        return getPrinterInfo8(PRINTER_ENUM_LOCAL);
     }
 
     /**
