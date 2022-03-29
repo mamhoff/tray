@@ -2,6 +2,7 @@ package qz.printer_info_9;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
 import com.sun.jna.platform.win32.WinDef;
@@ -21,7 +22,7 @@ public interface Winspool2 extends StdCallLibrary {
      */
     @FieldOrder({"pDevMode"})
     public static class PRINTER_INFO_9 extends Structure {
-        public DEVMODE pDevMode;
+        public DEVMODE.ByReference pDevMode;
 
         public PRINTER_INFO_9() {}
 
@@ -35,7 +36,7 @@ public interface Winspool2 extends StdCallLibrary {
      */
     @FieldOrder({"pDevMode"})
     public static class PRINTER_INFO_8 extends Structure {
-        public DEVMODE pDevMode;
+        public DEVMODE.ByReference pDevMode;
 
         public PRINTER_INFO_8() {}
 
