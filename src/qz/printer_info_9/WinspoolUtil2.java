@@ -163,8 +163,16 @@ public abstract class WinspoolUtil2 {
         return getPrinterInfo5(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
     }
 
+    public static PRINTER_INFO_6[] getAllPrinterInfo6() {
+        return getPrinterInfo6(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
     public static PRINTER_INFO_7[] getAllPrinterInfo7() {
         return getPrinterInfo7(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_8[] getAllPrinterInfo8() {
+        return getPrinterInfo8(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
     }
 
     public static PRINTER_INFO_9[] getAllPrinterInfo9() {
