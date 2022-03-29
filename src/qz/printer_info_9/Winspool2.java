@@ -4,10 +4,13 @@ import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
 import static qz.printer_info_9.WinGDI2.*;
+import static com.sun.jna.platform.win32.WinDef.*;
 
 public interface Winspool2 extends StdCallLibrary {
     Winspool2 INSTANCE = (Winspool2)Native.load("Winspool.drv", Winspool2.class, W32APIOptions.DEFAULT_OPTIONS);
@@ -20,11 +23,43 @@ public interface Winspool2 extends StdCallLibrary {
     public static class PRINTER_INFO_9 extends Structure {
         public DEVMODE pDevMode;
 
-        public PRINTER_INFO_9() {
-        }
+        public PRINTER_INFO_9() {}
 
         public PRINTER_INFO_9(int size) {
             super(new Memory((long)size));
         }
     }
+
+    /**
+     * The PRINTER_INFO_5 structure specifies detailed printer information.
+     */
+    @FieldOrder({"pPrinterName", "pPortName", "Attributes", "DeviceNotSelectedTimeout", "TransmissionRetryTimeout" })
+    public static class PRINTER_INFO_5 extends Structure {
+        public String pPrinterName;
+        public String pPortName;
+        public DWORD Attributes;
+        public DWORD DeviceNotSelectedTimeout;
+        public DWORD TransmissionRetryTimeout;
+
+        public PRINTER_INFO_5() {}
+
+        public PRINTER_INFO_5(int size) {
+            super(new Memory((long)size));
+        }
+    }
+
+    /*
+     * The PRINTER_INFO_3 structure specifies printer security information.
+     */
+    @FieldOrder({"pSecurityDescriptor"})
+    public static class PRINTER_INFO_3 extends Structure {
+        public WinNT.SECURITY_DESCRIPTOR_RELATIVE pSecurityDescriptor;
+
+        public PRINTER_INFO_3() {}
+
+        public PRINTER_INFO_3(int size) {
+            super(new Memory((long)size));
+        }
+    }
+
 }

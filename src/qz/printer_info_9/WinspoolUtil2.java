@@ -1,10 +1,12 @@
 package qz.printer_info_9;
 
+import com.sun.jna.Structure;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
 import com.sun.jna.platform.win32.Winspool;
 import com.sun.jna.ptr.IntByReference;
 
+import static com.sun.jna.platform.win32.Winspool.*;
 import static qz.printer_info_9.Winspool2.*;
 
 /**
@@ -13,17 +15,10 @@ import static qz.printer_info_9.Winspool2.*;
  * @author dblock[at]dblock.org, Ivan Ridao Freitas, Padrus, Artem Vozhdayenko
  */
 public abstract class WinspoolUtil2 {
-
     /**
-     * The <code>PRINTER_INFO_9</code> Structure specifies the per-user default printer settings.
-     *
-     * <ul>
-     *     <li><code>PRINTER_INFO_9</code>: Per-user defaults are unique to the user/profile.</li>
-     *     <li><code>PRINTER_INFO_8</code>: Global defaults are set by the administrator of a printer
-     *     and used by anyone.</li>
-     * </ul>
+     * Helper for getting printer info struct by number, e.g. PRINTER_INFO_1 = 1, etc.
      */
-    public static PRINTER_INFO_9 getPrinterInfo9(String printerName) {
+    public static Structure getPrinterInfoByStruct(String printerName, int structType) {
         IntByReference pcbNeeded = new IntByReference();
         IntByReference pcReturned = new IntByReference();
         HANDLEByReference pHandle = new HANDLEByReference();
@@ -34,25 +29,28 @@ public abstract class WinspoolUtil2 {
         }
 
         Win32Exception we = null;
-        PRINTER_INFO_9 pinfo9 = null;
+        Structure struct = null;
 
         try {
             // First pass: Get page size
-            Winspool.INSTANCE.GetPrinter(pHandle.getValue(), 9, null, 0, pcbNeeded);
+            Winspool.INSTANCE.GetPrinter(pHandle.getValue(), structType, null, 0, pcbNeeded);
+
+            struct = initStructByType(structType, pcbNeeded.getValue());
             if (pcbNeeded.getValue() <= 0) {
-                return new PRINTER_INFO_9();
+                return struct;
             }
 
             // Second pass: Get printer information
-            pinfo9 = new PRINTER_INFO_9(pcbNeeded.getValue());
-            if (!Winspool.INSTANCE.GetPrinter(pHandle.getValue(), 9, pinfo9.getPointer(), pcbNeeded.getValue(), pcReturned)) {
+            if (!Winspool.INSTANCE.GetPrinter(pHandle.getValue(), structType, struct.getPointer(), pcbNeeded.getValue(), pcReturned)) {
                 throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
             }
 
-            pinfo9.read();
-        } catch (Win32Exception e) {
+            struct.read();
+        }
+        catch(Win32Exception e) {
             we = e;
-        } finally {
+        }
+        finally {
             if (!Winspool.INSTANCE.ClosePrinter(pHandle.getValue())) {
                 Win32Exception ex = new Win32Exception(Kernel32.INSTANCE.GetLastError());
                 if (we != null) {
@@ -65,6 +63,195 @@ public abstract class WinspoolUtil2 {
             throw we;
         }
 
-        return pinfo9;
+        return struct;
+    }
+
+    /**
+     * Helper for getting array of printer info
+     * PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS
+     */
+    public static Structure[] getPrinterInfoByStruct(int flags, int structType) {
+        IntByReference pcbNeeded = new IntByReference();
+        IntByReference pcReturned = new IntByReference();
+        // When Name is NULL, setting Flags to PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS
+        // enumerates printers that are installed on the local machine.
+        // These printers include those that are physically attached to the local machine
+        // as well as remote printers to which it has a network connection.
+        // See https://msdn.microsoft.com/en-us/library/windows/desktop/dd162692(v=vs.85).aspx
+        Winspool.INSTANCE.EnumPrinters(flags, null, structType, null, 0, pcbNeeded, pcReturned);
+        Structure struct = initStructByType(structType, pcbNeeded.getValue());
+        if (pcbNeeded.getValue() <= 0) {
+            return emptyStructArrayByType(structType);
+        }
+        if (!Winspool.INSTANCE.EnumPrinters(flags, null, structType, struct.getPointer(), pcbNeeded.getValue(), pcbNeeded,
+                                            pcReturned)) {
+            throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+        }
+
+        struct.read();
+        return struct.toArray(pcReturned.getValue());
+    }
+
+    private static Structure[] emptyStructArrayByType(int structType) {
+        switch(structType) {
+            case 1:
+                return new PRINTER_INFO_1[0];
+            case 2:
+                return new PRINTER_INFO_2[0];
+            case 3:
+                return new PRINTER_INFO_3[0];
+            case 4:
+                return new PRINTER_INFO_4[0];
+            case 5:
+                return new PRINTER_INFO_5[0];
+            case 9:
+                return new PRINTER_INFO_9[0];
+            default:
+                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " has not been implemented");
+        }
+    }
+
+    private static Structure initStructByType(int structType, int size) {
+        switch(structType) {
+            case 1:
+                return size <= 0 ? new PRINTER_INFO_1() : new PRINTER_INFO_1(size);
+            case 2:
+                return size <= 0 ? new PRINTER_INFO_2() : new PRINTER_INFO_2(size);
+            case 3:
+                return size <= 0 ? new PRINTER_INFO_3() : new PRINTER_INFO_3(size);
+            case 4:
+                return size <= 0 ? new PRINTER_INFO_4() : new PRINTER_INFO_4(size);
+            case 5:
+                return size <= 0 ? new PRINTER_INFO_5() : new PRINTER_INFO_5(size);
+            case 9:
+                return size <= 0 ? new PRINTER_INFO_9() : new PRINTER_INFO_9(size);
+            default:
+                throw new UnsupportedOperationException("PRINTER_INFO_" + structType + " has not been implemented");
+        }
+    }
+
+    public static PRINTER_INFO_1[] getAllPrinterInfo1() {
+        return getPrinterInfo1(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_2[] getAllPrinterInfo2() {
+        return getPrinterInfo2(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_4[] getAllPrinterInfo4() {
+        return getPrinterInfo4(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_5[] getAllPrinterInfo5() {
+        return getPrinterInfo5(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    public static PRINTER_INFO_9[] getAllPrinterInfo9() {
+        return getPrinterInfo9(Winspool.PRINTER_ENUM_LOCAL | Winspool.PRINTER_ENUM_CONNECTIONS);
+    }
+
+    /**
+     * The PRINTER_INFO_1 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_1[] getPrinterInfo1() {
+        return getPrinterInfo1(Winspool.PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_1 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_1 getPrinterInfo1(String printerName) {
+        return (PRINTER_INFO_1)getPrinterInfoByStruct(printerName, 1);
+    }
+
+    /**
+     * The PRINTER_INFO_1 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_1[] getPrinterInfo1(int flags) {
+        return (PRINTER_INFO_1[])getPrinterInfoByStruct(flags, 1);
+    }
+
+    /**
+     * The PRINTER_INFO_2 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_2 getPrinterInfo2(String printerName) {
+        return (PRINTER_INFO_2)getPrinterInfoByStruct(printerName, 2);
+    }
+
+    /**
+     * The PRINTER_INFO_2 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_2[] getPrinterInfo2(int flags) {
+        return (PRINTER_INFO_2[])getPrinterInfoByStruct(flags, 2);
+    }
+
+    /**
+     * The PRINTER_INFO_2 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_2[] getPrinterInfo2() {
+        return getPrinterInfo2(Winspool.PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_4 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_4 getPrinterInfo4(String printerName) {
+        return (PRINTER_INFO_4)getPrinterInfoByStruct(printerName, 4);
+    }
+
+    /**
+     * The PRINTER_INFO_4 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_4[] getPrinterInfo4(int flags) {
+        return (PRINTER_INFO_4[])getPrinterInfoByStruct(flags, 4);
+    }
+
+    /**
+     * The PRINTER_INFO_4 structure specifies general printer information.
+     */
+    public static PRINTER_INFO_4[] getPrinterInfo4() {
+        return getPrinterInfo4(PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_5 structure specifies detailed printer information.
+     */
+    public static PRINTER_INFO_5 getPrinterInfo5(String printerName) {
+        return (PRINTER_INFO_5)getPrinterInfoByStruct(printerName, 5);
+    }
+
+    /**
+     * The PRINTER_INFO_5 structure specifies detailed printer information.
+     */
+    public static PRINTER_INFO_5[] getPrinterInfo5(int flags) {
+        return (PRINTER_INFO_5[])getPrinterInfoByStruct(flags, 5);
+    }
+
+    /**
+     * The PRINTER_INFO_5 structure specifies detailed printer information.
+     */
+    public static PRINTER_INFO_5[] getPrinterInfo5() {
+        return getPrinterInfo5(PRINTER_ENUM_LOCAL);
+    }
+
+    /**
+     * The PRINTER_INFO_9 Structure specifies the per-user default printer settings.\
+     */
+    public static PRINTER_INFO_9 getPrinterInfo9(String printerName) {
+        return (PRINTER_INFO_9)getPrinterInfoByStruct(printerName, 9);
+    }
+
+    /**
+     * The PRINTER_INFO_9 Structure specifies the per-user default printer settings.\
+     */
+    public static PRINTER_INFO_9[] getPrinterInfo9(int flags) {
+        return (PRINTER_INFO_9[])getPrinterInfoByStruct(flags, 9);
+    }
+
+    /**
+     * The PRINTER_INFO_9 Structure specifies the per-user default printer settings.\
+     */
+    public static PRINTER_INFO_9[] getPrinterInfo9() {
+        return getPrinterInfo9(PRINTER_ENUM_LOCAL);
     }
 }
