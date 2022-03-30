@@ -51,7 +51,7 @@ public interface Winspool2 extends StdCallLibrary {
     @FieldOrder({"pszObjectGUID", "dwAction"})
     public static class PRINTER_INFO_7 extends Structure {
         public String pszObjectGUID;
-        public DWORD dwAction;
+        public int dwAction;
 
         public PRINTER_INFO_7() {}
 
@@ -65,7 +65,7 @@ public interface Winspool2 extends StdCallLibrary {
      */
     @FieldOrder({"dwStatus"})
     public static class PRINTER_INFO_6 extends Structure {
-        public DWORD dwStatus;
+        public int dwStatus;
 
         public PRINTER_INFO_6() {}
 
@@ -81,9 +81,9 @@ public interface Winspool2 extends StdCallLibrary {
     public static class PRINTER_INFO_5 extends Structure {
         public String pPrinterName;
         public String pPortName;
-        public DWORD Attributes;
-        public DWORD DeviceNotSelectedTimeout;
-        public DWORD TransmissionRetryTimeout;
+        public int Attributes;
+        public int DeviceNotSelectedTimeout;
+        public int TransmissionRetryTimeout;
 
         public PRINTER_INFO_5() {}
 

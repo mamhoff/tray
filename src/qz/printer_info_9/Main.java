@@ -5,7 +5,6 @@ import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.Winspool;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 
 import static qz.printer_info_9.Winspool2.*;
 
@@ -54,6 +53,9 @@ public class Main {
 
             System.out.print(spaces(indent + 4) + f.getName() + ": ");
             Object o = f.get(info);
+            if(f.getName().equals("pDevMode") && o instanceof WinDef.INT_PTR) {
+                // FIXME: How to convert INT_PTR to DEVMODE?
+            }
             if (f.getName().equals("Status") || f.getName().equals("dwStatus")) {
                 int dwStatus = o instanceof WinDef.DWORD? ((WinDef.DWORD)o).intValue():(Integer)o;
                 System.out.println(o);
@@ -77,7 +79,7 @@ public class Main {
                 System.out.println(val);
             } else if (o instanceof Structure) {
                 System.out.println(" (" + o.getClass().getSuperclass().getSimpleName() + ")");
-                iterateFields((Structure)o, 2);
+                iterateFields((Structure)o, indent + 2);
             } else {
                 System.out.println(o);
             }
